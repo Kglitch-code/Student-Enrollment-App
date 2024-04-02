@@ -128,3 +128,12 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+Student-Enrollment-With-Flask/.idea/misc.xml
+Student-Enrollment-With-Flask/.idea/modules.xml
+Student-Enrollment-With-Flask/.idea/vcs.xml
+Student-Enrollment-With-Flask/Student-Enrollment-With-Flask.iml
+Student-Enrollment-With-Flask/.idea/sqldialects.xml
+.idea/Student-Enrollment-App.iml
