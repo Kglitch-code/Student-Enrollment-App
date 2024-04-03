@@ -89,7 +89,7 @@ Outputs the json
 */
 function showAllData(elementID){
     let data;
-    thisURL = "/view_users";
+    thisURL = "/admin";
     xhttp.open("GET", thisURL, async);
     xhttp.send();
     xhttp.onreadystatechange = () => {
