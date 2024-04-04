@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>CSE 108 Lab 8</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='basic-styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='student.css') }}">
+</head>
+
+<body>
+    <div>
+        <div class="student-navBar"></div>
+
+        <div class="student-header">
+            <h2>Student</h2>
+        </div>
+
+        <div id="main" class="row">
+            <div class="DataTable">Empty Table</div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='student.js') }}"></script>
+</body>
+</html>
