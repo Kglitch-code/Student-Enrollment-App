@@ -17,11 +17,14 @@
             <h2>Admin</h2>
         </div>
 
-        <div id="main" class="row">
-            <div class="DataTable">Empty Table</div>
+        <div id="main">
+            <div class ="DataTable" id="UserTable">Users</div>
         </div>
     </div>
 
+    <script type="text/javascript">
+        var usersdata = {{ users_data|tojson }}
+    </script>
     <script src="{{ url_for('static', filename='admin.js') }}"></script>
 </body>
 </html>

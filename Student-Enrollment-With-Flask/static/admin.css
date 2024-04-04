@@ -1,0 +1,8 @@
+table{
+    table-layout: fixed;
+}
+td{
+    max-width: 500px;
+    word-wrap: break-word;
+    border: solid black 1px;
+}
