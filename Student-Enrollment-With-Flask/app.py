@@ -63,6 +63,9 @@ class ClassEnrollment(db.Model):
     student_id = db.Column(db.Integer, ForeignKey('user.user_id'), nullable=False)
     grade = db.Column(db.Float(4), default=0.0)
 
+    # Relationship to access class info directly from an enrollment instance
+    class_info = db.relationship('Classes', backref='enrollments')
+
 
 # flask-login
 # reloads the user object from the user ID stored in the session
@@ -72,11 +75,17 @@ def load_user(user_id):
 
 
 # default data
-# has 2 students, 2 teachers, and 1 admin so far
+# has 4 students, 3 teachers, and 1 admin
 # update: has 1 class with John Smith as teacher and 1 student Jim Doe
+# jim doe is enrolled in math101
 #############
 # update: passwords now encrypted
+# update 2: has more default data
+# update: betty brown is enrolled into math101
 ################
+
+# need to add error handling for existing students/admins/teachers/classes/classenrollments
+
 def insert_default_data():
     new_student1 = User(name='Jim Doe', username='jimdoe', role='student')
     new_student1.set_password("password123")
@@ -86,6 +95,14 @@ def insert_default_data():
     new_student2.set_password("realpassword123")
     db.session.add(new_student2)
 
+    new_student3 = User(name='Nancy Little', username='nancylittle', role='student')
+    new_student3.set_password("opassword123")
+    db.session.add(new_student3)
+
+    new_student4 = User(name='Betty Brown', username='bettybrown2', role='student')
+    new_student4.set_password("rpassword456")
+    db.session.add(new_student4)
+
     teacher1 = User(name='Ammon Hepworth', username='ammonhepworth', role='teacher')
     teacher1.set_password("teacherPass12")
     db.session.add(teacher1)
@@ -93,6 +110,10 @@ def insert_default_data():
     teacher2 = User(name='John Smith', username='johnsmith', role='teacher')
     teacher2.set_password("xyz123")
     db.session.add(teacher2)
+
+    teacher3 = User(name='Susan Walker', username='susanwalker', role='teacher')
+    teacher3.set_password("123xyz")
+    db.session.add(teacher3)
 
     admin1 = User(name='admin1', username='admin1', role='admin')
     admin1.set_password("supersecretpassword123")
@@ -109,20 +130,62 @@ def insert_default_data():
     if instructor:
         # Now that you have the correct instructor, proceed to create the class with the fetched instructor_id
         class1 = Classes(class_name='Math 101', instructor_name=instructor.name, instructor_id=instructor.user_id,
-                         times_held='MWF 1:30-2:45PM', capacity_limit=30)
+                         times_held='MWF 1:30-2:45PM', capacity_limit=3)
         db.session.add(class1)
         db.session.commit()
-        print("class successfully added")
+        print("class math101 successfully added")
     else:
         print("instructor not found")
 
+    # enroll jim doe into math101
     if class1:
         student = User.query.filter_by(username='jimdoe').first()
         if student:
             class_enroll_jim_doe = ClassEnrollment(class_id=class1.class_id, student_id=student.user_id, grade=80.1)
             db.session.add(class_enroll_jim_doe)
             db.session.commit()
-    print("successfully enrolled jimdoe for default data")
+        print("successfully enrolled jimdoe into math101 for default data")
+
+    # enroll betty brown into math101
+    if class1:
+        student = User.query.filter_by(username='bettybrown2').first()
+        if student:
+            class_enroll_betty_brown = ClassEnrollment(class_id=class1.class_id, student_id=student.user_id, grade=90.5)
+            db.session.add(class_enroll_betty_brown)
+            db.session.commit()
+        print("successfully enrolled betty brown into math101 for default data")
+
+    class2 = None
+
+    ##class and class enrollment default data
+    instructor = User.query.filter_by(username='ammonhepworth').first()
+    if instructor:
+        # Now that you have the correct instructor, proceed to create the class with the fetched instructor_id
+        class2 = Classes(class_name='CSE 108', instructor_name=instructor.name, instructor_id=instructor.user_id,
+                         times_held='Th 5-7PM', capacity_limit=2)
+        db.session.add(class2)
+        db.session.commit()
+        print("class cse108 successfully added with ammon hepworth")
+    else:
+        print("instructor not found")
+
+    # enroll jim doe into math101
+    if class2:
+        student = User.query.filter_by(username='jimdoe').first()
+        if student:
+            class_enroll_jim_doe = ClassEnrollment(class_id=class2.class_id, student_id=student.user_id, grade=80.1)
+            db.session.add(class_enroll_jim_doe)
+            db.session.commit()
+        print("successfully enrolled jimdoe into cse108 for default data")
+
+    # enroll betty brown into math101
+    if class2:
+        student = User.query.filter_by(username='josesantos').first()
+        if student:
+            class_enroll_jose = ClassEnrollment(class_id=class2.class_id, student_id=student.user_id, grade=90.5)
+            db.session.add(class_enroll_jose)
+            db.session.commit()
+        print("successfully enrolled jose santos into cse108 for default data")
 
 
 with app.app_context():
@@ -138,9 +201,11 @@ def home():
     return render_template('login-teacher.html')
 
 
+# routes for student_dashboard and teacher_dasboard
+
 # UPDATE: is returning all 3 tables:
 # users, classes, and classenrollments
-
+# VIEWABLE ONLY
 @app.route('/admin')
 @login_required
 def admin_dashboard():
@@ -182,16 +247,100 @@ def admin_dashboard():
                            class_enroll_data=class_enroll_list)  # send data, display page
 
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+# view the classes a student is in already
+@app.route('/student/dashboard')
+# @login_required
+def student_dashboard():
+    default_user = User.query.filter_by(username="josesantos").first()
+
+    display_name = default_user.name
+    # find the classes that the student is enrolled in
+    classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=default_user.user_id).all()
+
+    class_info_list = [{
+        "class_name": enrollment.class_info.class_name,
+        "times_held": enrollment.class_info.times_held,
+        "instructor_name": enrollment.class_info.instructor_name,
+        "capacity_limit": enrollment.class_info.capacity_limit
+    } for enrollment in classes_enrolled_in]
+
+    # put correct html file name here but student.html is placeholder
+    return render_template('student.html', display_name=default_user.name, class_info_list=class_info_list)
+    # return display_name, classes_list
+
+#####below requires login functionality#######
+
+# Access the name of the currently logged-in user so it can be displayed in top corner
+    # display_name = current_user.name
+    #
+    # # make sure the user viewing this page is a student
+    # if not current_user or current_user.role != 'student':
+    #     # raise error if not student
+    #     flash('Access denied. This page is for students only.', 'error')
+    #     return redirect(url_for('login'))  # redirect to login page
+    #
+    # # find the classes that the student is enrolled in
+    # classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=current_user.user_id).all()
+    #
+    # class_info_list = [{
+    #     "class_name": enrollment.class_info.class_name,
+    #     "times_held": enrollment.class_info.times_held,
+    #     "instructor_name": enrollment.class_info.instructor_name,
+    #     "capacity_limit": enrollment.class_info.capacity_limit
+    # } for enrollment in classes_enrolled_in]
+    #
+    # # put correct html file name here but student.html is placeholder
+    # return render_template('student.html', display_name=current_user.name, class_info_list=class_info_list)
+
+#######################
+
+@app.route('/teacher/dashboard')
+@login_required
+def teacher_dashboard():
+    # Access the name of the currently logged-in user so it can be displayed in top corner
+    display_name = current_user.name
+
+    # make sure the user viewing this page is a student
+    if not current_user or current_user.role != 'teacher':
+        # raise error if not student
+        flash('Access denied. This page is for teachers only.', 'error')
+        return redirect(url_for('login'))  # redirect to login page
+
+    # find the classes that the teacher is teaching
+    classes_teaching = Classes.query.filter_by(instructor_id=current_user.user_id).all()
+    class_info_list = [{
+        "class_name": class_taught.class_name,
+        "times_held": class_taught.times_held,
+        "students_enrolled": len(class_taught.enrollments),
+        "capacity_limit": class_taught.capacity_limit
+    } for class_taught in classes_teaching]
+
+
+# put correct html file name here but teacher.html is placeholder
+    #python dictionary returned
+    return render_template('teacher.html', display_name=current_user.name, class_info_list=class_info_list)
+    # return display_name, classes_list
+
+
 #####################
 # function for login
-# needs to be post but currently throwing errors- possibly because not receiving info ?
+# should work- awaiting frontend
 ########################
 @app.route('/login')
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        # need these from front end
         username = request.form['username']
         password = request.form['password']
+
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
@@ -208,24 +357,6 @@ def login():
             flash('Invalid username or password.', 'error')
     # For GET requests or failed login attempts
     return render_template('login-teacher.html')
-
-
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('login'))
-
-    # comment the above return out and comment the below in if you want json
-    ######LINE TO JSONIFY THE DATA########
-    #
-    # users_json = json.dumps(users_list)
-    # return render_template('admin.html', users_data=users_list, users_json=users_json)
-    #########################
-
-
-# app.route('/login', METHODS= 'POST')
-# def login():
 
 
 # Remove cache to prevent errors
