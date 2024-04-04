@@ -55,7 +55,19 @@ function showUserData(elementID){
     jsonToTable(elementID, usersdata);
 }
 
+function showClassData(elementID){
+    document.getElementById(elementID).innerHTML = "Classes";
+    jsonToTable(elementID, classesdata);
+}
+
+function showClassEnrollmentData(elementID){
+    document.getElementById(elementID).innerHTML = "Class Enrollments";
+    jsonToTable(elementID, classenrollmentdata);
+}
+
 window.onload = function() {
     // console.log(usersdata);
     showUserData("UserTable");
+    showClassData("ClassTable");
+    showClassEnrollmentData("ClassEnrollmentTable");
 };

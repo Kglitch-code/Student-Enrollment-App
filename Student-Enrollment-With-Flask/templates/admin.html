@@ -23,11 +23,15 @@
 
         <div id="main">
             <div class ="DataTable" id="UserTable">Users</div>
+            <div class ="DataTable" id="ClassTable">Classes</div>
+            <div class ="DataTable" id="ClassEnrollmentTable">Class Enrollments</div>
         </div>
     </div>
 
     <script type="text/javascript">
         var usersdata = {{ users_data|tojson }}
+        var classesdata = {{ classes_data|tojson }}
+        var classenrollmentdata = {{ class_enroll_data|tojson }}
     </script>
     <script src="{{ url_for('static', filename='admin.js') }}"></script>
 </body>
