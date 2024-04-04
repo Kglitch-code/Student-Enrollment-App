@@ -21,14 +21,6 @@
             <a class = button href="/admin/edit-class-enrollemnts">Edit Class Enrollments</a>
         </div>
 
-        <div id="main">
-            <div class ="DataTable" id="UserTable">Users</div>
-        </div>
-    </div>
-
-    <script type="text/javascript">
-        var usersdata = {{ users_data|tojson }}
-    </script>
-    <script src="{{ url_for('static', filename='admin.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='admin.js') }}"></script> -->
 </body>
 </html>
