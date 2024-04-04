@@ -4,6 +4,7 @@ import os
 from sqlalchemy import text, true, ForeignKey, false
 from flask_login import UserMixin, LoginManager, login_required, current_user, logout_user, login_user
 from sqlalchemy.dialects.sqlite import json
+from sqlalchemy.orm import validates
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
 
@@ -16,10 +17,17 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 
+# class to hold different roles
+class UserRoles:
+    TEACHER = 'teacher'
+    STUDENT = 'student'
+    ADMIN = 'admin'
+
+
 # database models for the user, classes, and class enrollments
 
 class User(db.Model, UserMixin):
-    user_id = db.Column(db.Integer, primary_key=true)
+    user_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     username = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.Text, nullable=False)
@@ -33,9 +41,15 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
+    @validates('role')
+    def validate_role(self, key, role):
+        if role not in [UserRoles.TEACHER, UserRoles.STUDENT, UserRoles.ADMIN]:
+            raise ValueError("Invalid role.")
+        return role
+
 
 class Classes(db.Model):
-    class_id = db.Column(db.Integer, primary_key=true)
+    class_id = db.Column(db.Integer, primary_key=True)
     class_name = db.Column(db.String(255))
     instructor_name = db.Column(db.String(255))
     instructor_id = db.Column(db.Integer, ForeignKey('user.user_id'))
@@ -44,9 +58,9 @@ class Classes(db.Model):
 
 
 class ClassEnrollment(db.Model):
-    enrollment_id = db.Column(db.Integer, primary_key=true)
-    class_id = db.Column(db.Integer, ForeignKey('classes.class_id'), nullable=false)
-    student_id = db.Column(db.Integer, ForeignKey('user.user_id'), nullable=false)
+    enrollment_id = db.Column(db.Integer, primary_key=True)
+    class_id = db.Column(db.Integer, ForeignKey('classes.class_id'), nullable=False)
+    student_id = db.Column(db.Integer, ForeignKey('user.user_id'), nullable=False)
     grade = db.Column(db.Float(4), default=0.0)
 
 
@@ -93,19 +107,19 @@ def insert_default_data():
     ##class and class enrollment default data
     instructor = User.query.filter_by(username='johnsmith').first()
     if instructor:
-    # Now that you have the correct instructor, proceed to create the class with the fetched instructor_id
-        class1 = Classes(class_name='Math 101', instructor_name=instructor.name, instructor_id=instructor.user_id, times_held='MWF 1:30-2:45PM', capacity_limit=30)
+        # Now that you have the correct instructor, proceed to create the class with the fetched instructor_id
+        class1 = Classes(class_name='Math 101', instructor_name=instructor.name, instructor_id=instructor.user_id,
+                         times_held='MWF 1:30-2:45PM', capacity_limit=30)
         db.session.add(class1)
         db.session.commit()
         print("class successfully added")
     else:
         print("instructor not found")
 
-
     if class1:
         student = User.query.filter_by(username='jimdoe').first()
         if student:
-            class_enroll_jim_doe = ClassEnrollment(class_id= class1.class_id, student_id = student.user_id, grade = 80.1)
+            class_enroll_jim_doe = ClassEnrollment(class_id=class1.class_id, student_id=student.user_id, grade=80.1)
             db.session.add(class_enroll_jim_doe)
             db.session.commit()
     print("successfully enrolled jimdoe for default data")
@@ -124,55 +138,16 @@ def home():
     return render_template('login-teacher.html')
 
 
-#####################
-# function for login
-# needs to be post but currently throwing errors- possibly because not receiving info ?
-########################
-# @app.route('/login')
-# @app.route('/login', METHOD='POST')
-
-# DOESNT LIKE POST METHOD- will check
-# def login_page():
-# cannot render_template up here
-# username = request.form['username']
-# password = request.form['password']
-# user = User.query.filter_by(username=username).first()
-# if user and user.check_password(password):
-#   login_user(user)
-# check roles and bring to correct page
-# if user.role == 'admin':
-#     next_page = url_for('admin_dashboard') #depends on html name
-# elif user.role == 'student':
-#    next_page = url_for('student_dashboard') #depends on html name
-# elif user.role == 'teacher':
-#    next_page = url_for('teacher_dashboard') #depends on html name
-# return true #DEFAULT DO NOT USE
-# return redirect(next_page)
-# return render_template('login-teacher.html')
-
-# log a user out
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('login'))
-
-
-# route to view all users
-# currently used for testing but can be used for the admin role
-# @login_required #login required isnt working/not checking
-# possibly because login hasny been implemented entirely
-
-
 # UPDATE: is returning all 3 tables:
 # users, classes, and classenrollments
-# login_required
-@app.route('/admin', methods=['GET'])
-def view_users():
+
+@app.route('/admin')
+@login_required
+def admin_dashboard():
     # check if user is an admin so they can view the data here
-    # if current_user.role != 'admin':
-    #   flash('You do not have permission to view this page.', 'warning')
-    #  return redirect(url_for('some_other_route'))  # Redirect to another page
+    if current_user.role != 'admin':
+        flash('You do not have permission to view this page.', 'warning')
+        return redirect(url_for('home'))  # Redirect to login page
 
     users_data = User.query.all()
     # Create a list of dictionaries for each user
@@ -205,6 +180,41 @@ def view_users():
 
     return render_template('admin.html', users_data=users_list, classes_data=classes_list,
                            class_enroll_data=class_enroll_list)  # send data, display page
+
+
+#####################
+# function for login
+# needs to be post but currently throwing errors- possibly because not receiving info ?
+########################
+@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and user.check_password(password):
+            login_user(user)
+            # check roles and bring to correct page
+            if user.role == 'admin':
+                return redirect(url_for('admin_dashboard'))
+            elif user.role == 'student':  # NEEDS THE STUDENT VIEW
+                return redirect(url_for('student_dashboard'))  # needs the correct html name
+
+            elif user.role == 'teacher':  # NEEDS THE TEACHER VIEW
+                return redirect(url_for('teacher_dashboard'))  # depends on html name
+        else:
+            # If authentication fails, reload the login page with an error
+            flash('Invalid username or password.', 'error')
+    # For GET requests or failed login attempts
+    return render_template('login-teacher.html')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
     # comment the above return out and comment the below in if you want json
     ######LINE TO JSONIFY THE DATA########
