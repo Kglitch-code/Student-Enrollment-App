@@ -1,5 +1,6 @@
 table{
     table-layout: fixed;
+    border-collapse: collapse;
 }
 td{
     max-width: 500px;

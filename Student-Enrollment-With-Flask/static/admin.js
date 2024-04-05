@@ -1,6 +1,3 @@
-const xhttp = new XMLHttpRequest();
-const async = true;
-
 /*
 Create a json as a child node of the element with ID "elementID" from the json stored in the string json
 No output values, it just directly edits the node in the document
