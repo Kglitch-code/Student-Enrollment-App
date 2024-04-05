@@ -322,7 +322,7 @@ def student_dashboard():
     return render_template('student.html', display_name=current_user.name, class_info_list=class_info_list)
 
 
-@app.route('/student/dashboard/all-classes', methods=['POST'])
+@app.route('/student/dashboard/all-classes', methods=['GET', 'POST'])
 @login_required
 def change_classes():
     # display current user name in corner
