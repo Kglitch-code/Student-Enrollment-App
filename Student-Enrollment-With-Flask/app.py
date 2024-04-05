@@ -243,6 +243,9 @@ def admin_dashboard():
         for classEnrollments in class_enroll_data
     ]
 
+    users_list = json.dumps(users_list)
+    classes_list = json.dumps(classes_list)
+    class_enroll_list = json.dumps(class_enroll_list)
     return render_template('admin.html', users_data=users_list, classes_data=classes_list,
                            class_enroll_data=class_enroll_list)  # send data, display page
 
@@ -272,6 +275,7 @@ def student_dashboard():
         "Capacity Limit": enrollment.class_info.capacity_limit
     } for enrollment in classes_enrolled_in]
 
+    class_info_list = json.dumps(class_info_list)
     # put correct html file name here but student.html is placeholder
     return render_template('student.html', display_name=default_user.name, class_info_list=class_info_list)
 

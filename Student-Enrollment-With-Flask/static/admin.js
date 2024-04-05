@@ -7,7 +7,7 @@ function jsonToTable(elementID, json){
         console.log("undefined JSON")
     }
     else{
-        const dict = json;
+        const dict = JSON.parse(json);
         let table = document.createElement("table");
 
         //Headers
