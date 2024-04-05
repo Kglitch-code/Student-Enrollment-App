@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 import os
 from sqlalchemy import text, true, ForeignKey, false
@@ -162,7 +162,7 @@ def insert_default_data():
     if instructor:
         # Now that you have the correct instructor, proceed to create the class with the fetched instructor_id
         class2 = Classes(class_name='CSE 108', instructor_name=instructor.name, instructor_id=instructor.user_id,
-                         times_held='Th 5-7PM', capacity_limit=2)
+                         times_held='TR 5-7PM', capacity_limit=2)
         db.session.add(class2)
         db.session.commit()
         print("class cse108 successfully added with ammon hepworth")
@@ -188,6 +188,7 @@ def insert_default_data():
         print("successfully enrolled jose santos into cse108 for default data")
 
 
+# create database
 with app.app_context():
     db.drop_all()  # Delete the previous cache database
     db.create_all()
@@ -201,18 +202,16 @@ def home():
     return render_template('login-teacher.html')
 
 
-# routes for student_dashboard and teacher_dasboard
-
 # UPDATE: is returning all 3 tables:
 # users, classes, and classenrollments
 # VIEWABLE ONLY
 @app.route('/admin')
-@login_required
+# @login_required
 def admin_dashboard():
     # check if user is an admin so they can view the data here
-    if current_user.role != 'admin':
-        flash('You do not have permission to view this page.', 'warning')
-        return redirect(url_for('home'))  # Redirect to login page
+    # if current_user.role != 'admin':
+    #   print('You do not have permission to view this page.', 'warning')
+    #   return redirect(url_for('home'))  # Redirect to login page
 
     users_data = User.query.all()
     # Create a list of dictionaries for each user
@@ -250,6 +249,37 @@ def admin_dashboard():
                            class_enroll_data=class_enroll_list)  # send data, display page
 
 
+################
+# ADMIN EDIT ROUTES - IN PROGRESS
+#######################################
+# @app.route('/admin/edit-users')
+# #@login_required
+# def admin_edit_users():
+# # check if user is an admin so they can view the data here
+# # if current_user.role != 'admin':
+# #   print('You do not have permission to view this page.', 'warning')
+# #   return redirect(url_for('home'))  # Redirect to login page
+# #function to log out and return to login page
+#
+# @app.route('/admin/edit-classes')
+# #@login_required
+# def admin_edit_class():
+# # check if user is an admin so they can view the data here
+# # if current_user.role != 'admin':
+# #   print('You do not have permission to view this page.', 'warning')
+# #   return redirect(url_for('home'))  # Redirect to login page
+#
+# @app.route('/admin/edit-enrollments')
+# #@login_required
+# def admin_edit_enrollments():
+# # check if user is an admin so they can view the data here
+# # if current_user.role != 'admin':
+# #   print('You do not have permission to view this page.', 'warning')
+# #   return redirect(url_for('home'))  # Redirect to login page
+#
+# ######################3
+
+# sign out button
 @app.route('/logout')
 @login_required
 def logout():
@@ -258,14 +288,26 @@ def logout():
 
 
 # view the classes a student is in already
-@app.route('/student/dashboard')
-# @login_required
-def student_dashboard():
-    default_user = User.query.filter_by(username="jimdoe").first()
 
-    display_name = default_user.name
+# default stuff is commented out but present
+@app.route('/student/dashboard')
+@login_required
+def student_dashboard():
+    # default data- will comment out and put the other stuff back in when frontend login is done
+    # default_user = User.query.filter_by(username="jimdoe").first()
+
+    display_name = current_user.name
+    # display_name = default_user.name
+
+    # make sure the current user is a student
+    if not current_user or current_user.role != 'student':
+        # raise error if not student
+        print('Access denied. This page is for students only.', 'error')
+        return redirect(url_for('login'))  # redirect to login page
+
     # find the classes that the student is enrolled in
-    classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=default_user.user_id).all()
+    classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=current_user.user_id).all()
+    # classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=default_user.user_id).all()
 
     class_info_list = [{
         "Class Name": enrollment.class_info.class_name,
@@ -277,34 +319,64 @@ def student_dashboard():
 
     class_info_list = json.dumps(class_info_list)
     # put correct html file name here but student.html is placeholder
-    return render_template('student.html', display_name=default_user.name, class_info_list=class_info_list)
+    return render_template('student.html', display_name=current_user.name, class_info_list=class_info_list)
 
 
-#####below requires login functionality#######
+@app.route('/student/dashboard/all-classes', methods=['POST'])
+@login_required
+def change_classes():
+    # display current user name in corner
+    display_name = current_user.name
 
-# Access the name of the currently logged-in user so it can be displayed in top corner
-    # display_name = current_user.name
-    #
-    # # make sure the user viewing this page is a student
-    # if not current_user or current_user.role != 'student':
-    #     # raise error if not student
-    #     flash('Access denied. This page is for students only.', 'error')
-    #     return redirect(url_for('login'))  # redirect to login page
-    #
-    # # find the classes that the student is enrolled in
-    # classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=current_user.user_id).all()
-    #
-    # class_info_list = [{
-    #     "class_name": enrollment.class_info.class_name,
-    #     "times_held": enrollment.class_info.times_held,
-    #     "instructor_name": enrollment.class_info.instructor_name,
-    #     "capacity_limit": enrollment.class_info.capacity_limit
-    # } for enrollment in classes_enrolled_in]
-    #
-    # # put correct html file name here but student.html is placeholder
-    # return render_template('student.html', display_name=current_user.name, class_info_list=class_info_list)
+    #make sure user is a student
+    if not current_user or current_user.role != 'student':
+        # raise error if not student
+        print('Access denied. This page is for students only.', 'error')
+        return redirect(url_for('login'))  # redirect to login page
 
-#######################
+    # find all classes and display the info associated with them
+    all_classes = Classes.query.all()
+
+    class_info_list = [{
+        "Class Name": classes_available.class_name,
+        "Times held": classes_available.times_held,
+        "Students enrolled": len(classes_available.enrollments),
+        "Capacity Limit": classes_available.capacity_limit
+    } for classes_available in all_classes]
+
+    # same format as student courses so the table stays insertion-order
+    class_info_list = json.dumps(class_info_list)
+
+    if request.method == 'POST':
+        #add and remove classes depending on action
+        class_id = request.form.get('class_id')
+        action = request.form.get('action') #action from front end will be add or delete
+
+        #add the class
+        if action == 'add':
+            #first check if student is already enrolled in the class
+            if not ClassEnrollment.query.filter_by(class_id=class_id, student_id=current_user.user_id).first():
+                new_class_enroll = ClassEnrollment(class_id=class_id, student_id=current_user.user_id, grade=0.0)
+                db.session.add(new_class_enroll)
+                db.session.commit()
+                print("successfully added new class")
+            else:
+                print("student already enrolled in class")
+
+        #delete the class
+        elif action == 'delete':
+            delete_class = ClassEnrollment.query.filter_by(class_id=class_id, student_id=current_user.user_id).first()
+            #delete the class if the student is in it
+            if delete_class:
+                db.session.delete(delete_class)
+                db.session.commit()
+                print("successfully unenrolled in class")
+            else:
+                print("student not enrolled in class- unenrollment unavailable")
+
+    # classes.html is placeholder
+    return render_template('classes.html', display_name=current_user.name, class_info_list=class_info_list)
+
 
 @app.route('/teacher/dashboard')
 @login_required
@@ -315,7 +387,7 @@ def teacher_dashboard():
     # make sure the user viewing this page is a student
     if not current_user or current_user.role != 'teacher':
         # raise error if not student
-        flash('Access denied. This page is for teachers only.', 'error')
+        print('Access denied. This page is for teachers only.', 'error')
         return redirect(url_for('login'))  # redirect to login page
 
     # find the classes that the teacher is teaching
@@ -327,11 +399,61 @@ def teacher_dashboard():
         "Capacity Limit": class_taught.capacity_limit
     } for class_taught in classes_teaching]
 
+    # same format as student courses
+    class_info_list = json.dumps(class_info_list)
 
-# put correct html file name here but teacher.html is placeholder
-    #python dictionary returned
+    # put correct html file name here but teacher.html is placeholder
     return render_template('teacher.html', display_name=current_user.name, class_info_list=class_info_list)
     # return display_name, classes_list
+
+
+# edit grades for the selected class
+@app.route('/teacher/dashboard/<int:class_id>', methods=['GET', 'POST'])
+@login_required
+def edit_grades(class_id):
+    # Access the name of the currently logged-in user so it can be displayed in top corner
+    display_name = current_user.name
+
+    # make sure the user viewing this page is a student
+    if not current_user or current_user.role != 'teacher':
+        # raise error if not student
+        print('Access denied. This page is for teachers only.', 'error')
+        return redirect(url_for('login'))  # redirect to login page
+
+    # get the class id from the route
+    class_to_edit = Classes.query.get_or_404(class_id)
+
+    # get the students names for the students in the class
+    enrollments = ClassEnrollment.query.filter_by(class_id=class_id).join(User,
+                                                                          ClassEnrollment.student_id == User.id).add_columns(
+        User.name, ClassEnrollment.grade).all()
+
+    # display the student names and their grade for the given class
+    grade_list = [{
+        "Student Name": student[1],
+        "Student Id": student[0].user_id,
+        "Grade ": student[0].grade
+    } for student in enrollments]
+
+    grade_list = json.dumps(grade_list)
+
+    # edit the grade
+    if request.method == 'POST':
+        student_id = request.form.get('student_id')
+        new_grade = request.form.get('new_grade')
+
+        # find the student's grade by the class_id and student_id
+        enrollment_record = ClassEnrollment.query.filter_by(class_id=class_id, student_id=student_id).first()
+
+        if enrollment_record:
+            enrollment_record.grade = new_grade
+            db.session.commit()
+            print('Grade updated successfully.', 'success')
+        else:
+            print('Enrollment record not found.', 'error')
+
+    # assuming grades html
+    return render_template('grades.html', display_name=current_user.name, grade_list=grade_list, class_id=class_id)
 
 
 #####################
@@ -359,7 +481,7 @@ def login():
                 return redirect(url_for('teacher_dashboard'))  # depends on html name
         else:
             # If authentication fails, reload the login page with an error
-            flash('Invalid username or password.', 'error')
+            print('Invalid username or password.', 'error')
     # For GET requests or failed login attempts
     return render_template('login-teacher.html')
 
