@@ -217,8 +217,8 @@ def admin_dashboard():
     users_data = User.query.all()
     # Create a list of dictionaries for each user
     users_list = [
-        {"user_id": user.user_id, "name": user.name, "username": user.username, "password": user.password,
-         "role": user.role}
+        {"user_id": user.user_id, "Name": user.name, "Username": user.username, "Password": user.password,
+         "Role": user.role}
         for user in users_data
     ]
 
@@ -228,7 +228,7 @@ def admin_dashboard():
     classes_list = [
         {"class_id": classes.class_id, "instructor_name": classes.instructor_name,
          "instructor_id": classes.instructor_id, "times_held": classes.times_held,
-         "capacity_limit": classes.capacity_limit}
+         "Capacity Limit": classes.capacity_limit}
         for classes in classes_data
     ]
 
@@ -258,22 +258,23 @@ def logout():
 @app.route('/student/dashboard')
 # @login_required
 def student_dashboard():
-    default_user = User.query.filter_by(username="josesantos").first()
+    default_user = User.query.filter_by(username="jimdoe").first()
 
     display_name = default_user.name
     # find the classes that the student is enrolled in
     classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=default_user.user_id).all()
 
     class_info_list = [{
-        "class_name": enrollment.class_info.class_name,
-        "times_held": enrollment.class_info.times_held,
-        "instructor_name": enrollment.class_info.instructor_name,
-        "capacity_limit": enrollment.class_info.capacity_limit
+        "Class Name": enrollment.class_info.class_name,
+        "Times held": enrollment.class_info.times_held,
+        "Teacher": enrollment.class_info.instructor_name,
+        "Students enrolled": len(enrollment.class_info.enrollments),
+        "Capacity Limit": enrollment.class_info.capacity_limit
     } for enrollment in classes_enrolled_in]
 
     # put correct html file name here but student.html is placeholder
     return render_template('student.html', display_name=default_user.name, class_info_list=class_info_list)
-    # return display_name, classes_list
+
 
 #####below requires login functionality#######
 
@@ -316,10 +317,10 @@ def teacher_dashboard():
     # find the classes that the teacher is teaching
     classes_teaching = Classes.query.filter_by(instructor_id=current_user.user_id).all()
     class_info_list = [{
-        "class_name": class_taught.class_name,
-        "times_held": class_taught.times_held,
-        "students_enrolled": len(class_taught.enrollments),
-        "capacity_limit": class_taught.capacity_limit
+        "Class Name": class_taught.class_name,
+        "Times held": class_taught.times_held,
+        "Students enrolled": len(class_taught.enrollments),
+        "Capacity Limit": class_taught.capacity_limit
     } for class_taught in classes_teaching]
 
 
