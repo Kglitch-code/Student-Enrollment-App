@@ -22,7 +22,10 @@
         </div>
 
         <div id="main">
-            <div class ="DataTable" id="UserTable">Users</div>
+            <form action="{{ url_for('')}}" method="post">
+                <div class ="DataTable" id="UserTable">Users</div>
+                <button type="submit" >Submit Edits</button>
+            </form>
             <div class ="DataTable" id="ClassTable">Classes</div>
             <div class ="DataTable" id="ClassEnrollmentTable">Class Enrollments</div>
         </div>
