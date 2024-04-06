@@ -2,16 +2,21 @@ table{
     table-layout: fixed;
     border-collapse: collapse;
 }
+
+th{
+    max-width: 500px;
+    word-wrap: break-word;
+    border: solid black 1px;
+}
+
 td{
     max-width: 500px;
     word-wrap: break-word;
     border: solid black 1px;
 }
 
-th{
-    max-width: 500px;
-    word-wrap: break-word;
-    border: solid black 1px;
+td:hover{
+    background-color: aliceblue;
 }
 
 a.button{

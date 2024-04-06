@@ -2,6 +2,24 @@
 Create a json as a child node of the element with ID "elementID" from the json stored in the string json
 No output values, it just directly edits the node in the document
 */
+let selectedRow = "";
+
+function selectFeature(elementID, i, j) { 
+    console.log('.' + elementID + "row" + i);
+    if(selectedRow){
+        let elements = document.querySelectorAll('.' + selectedRow);
+        elements.forEach(function(element) {
+            element.style.backgroundColor = '';
+        });
+    }
+
+    elements = document.querySelectorAll('.' + elementID + "row" + i);
+    elements.forEach(function(element) {
+        element.style.backgroundColor = 'white'; // Remove inline style to revert to default
+    });
+    selectedRow=elementID + "row" + i;
+}
+
 function jsonToTable(elementID, json){
     if(typeof json === 'undefined'){
         console.log("undefined JSON")
@@ -35,6 +53,9 @@ function jsonToTable(elementID, json){
             for(let j in headers){
                 let key = document.createElement("td");
                 let text = document.createTextNode(dict[i][headers[j]]);
+                key.setAttribute("class", elementID+"row"+i);
+                key.setAttribute("id", elementID+ "row"+i+"."+j);
+                key.setAttribute("onclick", "selectFeature(\""+elementID+"\"," + i+","+j+ ")");
                 key.appendChild(text); //Add the text to the td
                 row.appendChild(key); //Add the td to the table
             }
@@ -64,7 +85,7 @@ function showClassEnrollmentData(elementID){
 
 window.onload = function() {
     // console.log(usersdata);
-    showUserData("UserTable");
-    showClassData("ClassTable");
-    showClassEnrollmentData("ClassEnrollmentTable");
+    // showUserData("UserTable");
+    // showClassData("ClassTable");
+    // showClassEnrollmentData("ClassEnrollmentTable");
 };

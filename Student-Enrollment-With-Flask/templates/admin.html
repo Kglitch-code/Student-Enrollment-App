@@ -34,5 +34,10 @@
         var classenrollmentdata = {{ class_enroll_data|tojson }}
     </script>
     <script src="{{ url_for('static', filename='admin.js') }}"></script>
+    <script type="text/javascript">
+        showUserData("UserTable");
+        showClassData("ClassTable");
+        showClassEnrollmentData("ClassEnrollmentTable");
+    </script>
 </body>
 </html>
