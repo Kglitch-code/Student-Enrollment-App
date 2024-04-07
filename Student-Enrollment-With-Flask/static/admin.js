@@ -1,25 +1,86 @@
+let selectedRow = "";
+let selectedFeature = "";
+let selectedTable = "";
+let selectedRowNum = "";
+let selectedFeatureNum = "";
+
+document.addEventListener('click', function(event) {
+    console.log(event);
+    var clickedElement = event.target;
+    var onclickAttribute = clickedElement.getAttribute('onclick');
+    
+    if (onclickAttribute !== null) {
+        console.log('The onclick function activated by the click:', onclickAttribute);
+        // You can perform further actions based on the onclick function if needed
+    } else {
+        console.log('No onclick function was activated by the click.');
+    }
+});
+
+function deselectFeature(elementID, i, j){
+    if(selectedRow){
+        let elements = document.querySelectorAll('.' + selectedRow);
+        elements.forEach(function(element) {
+            element.style.backgroundColor = ''; //Remove Styles for Existing row
+        });
+        
+        let inp=document.getElementById("inputValue")
+        let inpText = inp.getAttribute("pastValue")
+        let TD = inp.parentElement;
+        inp.remove();
+        TD.innerHTML= inpText;
+
+        selectedRow = "";
+        selectedFeature = "";
+        selectedTable = "";
+        selectedRowNum = "";
+        selectedFeatureNum = "";
+        return true;
+    }
+    return false
+}
+
+// function deselectFeature(){
+//     deselectFeature(selectedTable, selectedRowNum, selectedFeatureNum)
+//     return
+// }
+
+function selectFeature(elementID, i, j) { 
+    deselectFeature(elementID, i, j)
+
+    oldselectedFeature = selectedFeature;
+
+    selectedRow=(elementID + "row" + i);
+    selectedFeature = (elementID+ "row"+i+"."+j);
+    selectedTable = elementID;
+    selectedRowNum = i;
+    selectedFeatureNum = j;
+
+    
+    let elements = document.querySelectorAll('.' + elementID + "row" + i);
+    elements.forEach(function(element) {
+        element.style.backgroundColor = 'white'; // Select Current Row
+    });
+
+    if(selectedFeature != oldselectedFeature){
+        selectedTD = document.getElementById(selectedFeature);
+
+        let innertext = selectedTD.innerHTML;
+        selectedTD.innerHTML = "";
+        inp = document.createElement("input");
+        inp.setAttribute("value", innertext);
+        inp.setAttribute("pastValue", innertext);
+        inp.setAttribute("id", "inputValue");
+        selectedTD.appendChild(inp);
+        inp.focus();
+        inp.select();
+    }
+}
+
 /*
 Create a json as a child node of the element with ID "elementID" from the json stored in the string json
 No output values, it just directly edits the node in the document
 */
-let selectedRow = "";
-
-function selectFeature(elementID, i, j) { 
-    console.log('.' + elementID + "row" + i);
-    if(selectedRow){
-        let elements = document.querySelectorAll('.' + selectedRow);
-        elements.forEach(function(element) {
-            element.style.backgroundColor = '';
-        });
-    }
-
-    elements = document.querySelectorAll('.' + elementID + "row" + i);
-    elements.forEach(function(element) {
-        element.style.backgroundColor = 'white'; // Remove inline style to revert to default
-    });
-    selectedRow=elementID + "row" + i;
-}
-
 function jsonToTable(elementID, json){
     if(typeof json === 'undefined'){
         console.log("undefined JSON")

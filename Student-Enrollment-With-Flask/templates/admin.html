@@ -15,14 +15,17 @@
             <h2>Admin</h2>
         </div>
         <div class="admin-navBar">
-            <a class = button href="/admin">Admin Home</a>
-            <a class = button href="/admin/edit-users">Edit Users</a>
+            <a class = button href="/admin/dashboard">Admin Home</a>
+           {# <a class = button href="/admin/edit-users">Edit Users</a>
             <a class = button href="/admin/edit-classes">Edit Classes</a>
-            <a class = button href="/admin/edit-class-enrollments">Edit Class Enrollments</a>
+            <a class = button href="/admin/edit-class-enrollments">Edit Class Enrollments</a>#}
         </div>
 
         <div id="main">
-            <div class ="DataTable" id="UserTable">Users</div>
+            <form action="{{ url_for('')}}" method="post">
+                <div class ="DataTable" id="UserTable">Users</div>
+                <button type="submit" >Submit Edits</button>
+            </form>
             <div class ="DataTable" id="ClassTable">Classes</div>
             <div class ="DataTable" id="ClassEnrollmentTable">Class Enrollments</div>
         </div>

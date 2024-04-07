@@ -30,3 +30,8 @@ a.button{
 .admin-navBar{
     margin: 10px;
 }
+
+input{
+    border-radius: 0px;
+    width: 300px;
+}
