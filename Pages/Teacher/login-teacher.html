@@ -5,49 +5,34 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>CSE 108 Lab 8</title>
-  <link href="../../Styles/login-teacher.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="..\Student-Enrollment-App1\static\login-teacher.css">
 </head>
 
 <body>
-    <div class="login-container">
+  <div class="login-container">
+    <div class="login-navBar"></div>
+    <div id="login" class="row">
+      <div class="column" id="image"></div>
+      <div class="column" id="login">
+        <form id="login-form" class="login-form">
+          <h2>Login</h2>
+          <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+          </div>
+          <button type="submit">Login</button>
+        </form>
 
-        <div class="login-navBar"></div>
+        <script src="../Student-Enrollment-App1/Static/login.teacher.js"></script>
 
-        <div class="login-header">
-        <h2>Login</h2>
-        </div>
-
-        <div id="login" class="row">
-
-            <div class="column side"></div>
-
-            <div class="column middle">
-                <form id="login-form">
-                    <div class="form-group">
-                        <label for="username">Username:</label>
-                        <input type="text" id="username" name="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                    <button type="submit">Login</button>
-                </form>
-            </div>
-
-            
-        </div>
-
-        <div class="login-footer"></div>
+      </div>
     </div>
-
-
-
-
-
-
-
-    </div>
-    <script src="login-teacher.js"></script>
+    <div class="login-footer"></div>
+  </div>
 </body>
+
 </html>
