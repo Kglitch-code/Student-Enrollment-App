@@ -303,23 +303,23 @@ def logout():
 
 # default stuff is commented out but present
 @app.route('/student/dashboard')
-# @login_required
+@login_required
 def student_dashboard():
     # default data- will comment out and put the other stuff back in when frontend login is done
-    default_user = User.query.filter_by(username="jimdoe").first()
+   # default_user = User.query.filter_by(username="jimdoe").first()
 
-    # display_name = current_user.name
-    display_name = default_user.name
+    display_name = current_user.name
+    #display_name = default_user.name
 
     # make sure the current user is a student
-    # if not current_user or current_user.role != 'student':
+    if not current_user or current_user.role != 'student':
     # raise error if not student
-    # print('Access denied. This page is for students only.', 'error')
-    # return redirect(url_for('login'))  # redirect to login page
+        print('Access denied. This page is for students only.', 'error')
+        return redirect(url_for('login'))  # redirect to login page
 
     # find the classes that the student is enrolled in
-    # classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=current_user.user_id).all()
-    classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=default_user.user_id).all()
+    classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=current_user.user_id).all()
+    #classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=default_user.user_id).all()
 
     class_info_list = [{
         "Class Name": enrollment.class_info.class_name,
@@ -331,8 +331,8 @@ def student_dashboard():
 
     class_info_list = json.dumps(class_info_list)
     # put correct html file name here but student.html is placeholder
-    # return render_template('student.html', display_name=current_user.name, class_info_list=class_info_list)
-    return render_template('student.html', display_name=default_user.name, class_info_list=class_info_list)
+    return render_template('student.html', display_name=current_user.name, class_info_list=class_info_list)
+    #return render_template('student.html', display_name=default_user.name, class_info_list=class_info_list)
 
 
 # student add/remove classes
@@ -505,7 +505,7 @@ def login():
             login_user(user)
             # check roles and bring to correct page
             if user.role == 'admin':
-                return redirect(url_for('admin_dashboard'))
+                return redirect(url_for('admin.index'))
             elif user.role == 'student':  # NEEDS THE STUDENT VIEW
                 return redirect(url_for('student_dashboard'))  # needs the correct html name
 
