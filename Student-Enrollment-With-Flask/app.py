@@ -464,42 +464,40 @@ def edit_grades(class_id):
         .filter(ClassEnrollment.class_id == class_id) \
         .all()
 
-
-
     grade_list = [{
         "Student Name": enrollment[0],
         "Student Id": enrollment[1],
         "Grade": enrollment[2]
     } for enrollment in enrollments]
 
-    # Assuming grade_list is populated as shown in previous examples
-    for index, item in enumerate(grade_list):
-        if not isinstance(item, dict):
-            print(f"Item at index {index} is not a dictionary. Type: {type(item)}")
-            continue  # Skip to the next item if this one isn't a dictionary
-
-        for key, value in item.items():
-            if not isinstance(value, (str, int, float, list, dict, bool, type(None))):
-                print(f"Non-serializable type found at index {index}, key '{key}': {type(value)}")
-            else:
-                print(f"Item at index {index}, key '{key}' is of serializable type: {type(value)}")
+    # # debugging
+    # for index, item in enumerate(grade_list):
+    #     if not isinstance(item, dict):
+    #         print(f"Item at index {index} is not a dictionary. Type: {type(item)}")
+    #         continue  # Skip to the next item if this one isn't a dictionary
+    #
+    #     for key, value in item.items():
+    #         if not isinstance(value, (str, int, float, list, dict, bool, type(None))):
+    #             print(f"Non-serializable type found at index {index}, key '{key}': {type(value)}")
+    #         else:
+    #             print(f"Item at index {index}, key '{key}' is of serializable type: {type(value)}")
 
     grade_list = json.dumps(grade_list)
 
     # edit the grade
-    # if request.method == 'POST':
-    #     student_id = request.form.get('student_id')
-    #     new_grade = request.form.get('new_grade')
-    #
-    #     # find the student's grade by the class_id and student_id
-    #     enrollment_record = ClassEnrollment.query.filter_by(class_id=class_id, student_id=student_id).first()
-    #
-    #     if enrollment_record:
-    #         enrollment_record.grade = new_grade
-    #         db.session.commit()
-    #         print('Grade updated successfully.', 'success')
-    #     else:
-    #         print('Enrollment record not found.', 'error')
+    if request.method == 'POST':
+        student_id = request.form.get('student_id')
+        new_grade = request.form.get('new_grade')
+
+        # find the student's grade by the class_id and student_id
+        enrollment_record = ClassEnrollment.query.filter_by(class_id=class_id, student_id=student_id).first()
+
+        if enrollment_record:
+            enrollment_record.grade = new_grade
+            db.session.commit()
+            print('Grade updated successfully.', 'success')
+        else:
+            print('Enrollment record not found.', 'error')
 
     # assuming grades html
     return render_template('grades.html', display_name=current_user.name, grade_list=grade_list, class_id=class_id)
