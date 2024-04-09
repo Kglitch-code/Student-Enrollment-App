@@ -462,10 +462,11 @@ def change_classes():
     class_info_list = json.dumps(class_info_list)
 
     if request.method == 'POST':
+        data = request.json
         # add and remove classes depending on action
-        class_id = request.form.get('class_id')
-        option = request.form.get('option')  # action from front end will be add or delete
-
+        class_id = data.get('class_id')
+        option = data.get('option')  # action from front end will be add or delete
+        print(class_id, option)
         # add the class
         if option == 'add':
             # Check if the class exists and capacity allows for more enrollments

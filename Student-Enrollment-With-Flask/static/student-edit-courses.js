@@ -63,9 +63,57 @@ function showClassData(elementID) {
 }
 
 function addClass(className) {
-    // Implement logic to add class (send data to server using AJAX or form submission)
-    alert("Add class: " + className);
+    // Send data to server to add class using fetch API
+    fetch('/student/dashboard/all-classes', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            option: 'add',
+            class_id: className
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            // Handle success response
+            alert("Class added: " + className);
+            // Reload the page to reflect the changes
+            // updateStudentPage();
+        } else {
+            // Handle error response
+            console.log(response)
+            alert("Failed to add class: " + className);
+        }
+    })
+    .catch(error => {
+        // Handle network error
+        // console.error('Error adding class:', error);
+        alert("Failed to add class: " + className);
+    });
 }
+
+// function updateStudentPage() {
+//     // Fetch updated class data from the server
+//     fetch('/student/dashboard')
+//     console.log(response)
+//     .then(response => {
+//         if (!response.ok) {
+//             throw new Error('Failed to fetch class data');
+//         }
+//         return response.json();
+//     })
+//     .then(data => {
+//         // Update classinfodata with the newly fetched data
+//         classinfodata = data;
+//         // Show updated class data on student.html page
+//         showClassData("allClassesTable");
+//     })
+//     .catch(error => {
+//         // console.error('Error updating student page:', error);
+//         alert("Failed to update student page");
+//     });
+// }
 
 function deleteClass(className) {
     // Implement logic to delete class (send data to server using AJAX or form submission)
