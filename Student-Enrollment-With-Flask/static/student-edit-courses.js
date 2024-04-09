@@ -59,7 +59,7 @@ function jsonToTable(elementID, json) {
 }
 
 function showClassData(elementID) {
-    document.getElementById(elementID).innerHTML = "Classes";
+    document.getElementById(elementID).innerHTML = "";
     jsonToTable(elementID, classinfodata);
 }
 

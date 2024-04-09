@@ -185,12 +185,12 @@ function addOnClicks(elementID, Header, functionName, functionid=null){
 }
 
 function showClassData(elementID){
-    document.getElementById(elementID).innerHTML = "Classes";
+    document.getElementById(elementID).innerHTML = "";
     jsonToTable(elementID, classinfodata);
 }
 
 function showGradesData(elementID){
-    document.getElementById(elementID).innerHTML = "Grades";
+    document.getElementById(elementID).innerHTML = "";
     jsonToTable(elementID, gradeList);
 }
 
