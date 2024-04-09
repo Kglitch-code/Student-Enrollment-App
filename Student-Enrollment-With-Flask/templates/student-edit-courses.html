@@ -27,6 +27,7 @@
 
     <script type="text/javascript">
         var classinfodata = {{ class_info_list|tojson }}
+        var classIDS = {{ class_IDs|tojson }}
     </script>
     <script src="{{ url_for('static', filename='student-edit-courses.js') }}"></script>
 </body>

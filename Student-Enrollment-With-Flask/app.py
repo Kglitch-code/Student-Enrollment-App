@@ -461,12 +461,19 @@ def change_classes():
     # same format as student courses so the table stays insertion-order
     class_info_list = json.dumps(class_info_list)
 
+    class_IDs = [{
+        "ID": classes_available.class_id,
+    } for classes_available in all_classes]
+    
+    class_IDs = json.dumps(class_IDs)
+
     if request.method == 'POST':
         data = request.json
         # add and remove classes depending on action
         class_id = data.get('class_id')
         option = data.get('option')  # action from front end will be add or delete
-        print(class_id, option)
+        print(class_id)
+        print(option)
         # add the class
         if option == 'add':
             # Check if the class exists and capacity allows for more enrollments
@@ -496,7 +503,7 @@ def change_classes():
                 print("student not enrolled in class- unenrollment unavailable")
 
     # classes.html is placeholder
-    return render_template('student-edit-courses.html', display_name=current_user.name, class_info_list=class_info_list)
+    return render_template('student-edit-courses.html', display_name=current_user.name, class_info_list=class_info_list, class_IDs=class_IDs)
 
 
 # teacher dashboard with default data
