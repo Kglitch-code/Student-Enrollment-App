@@ -337,19 +337,19 @@ def student_dashboard():
 
 # student add/remove classes
 @app.route('/student/dashboard/all-classes', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def change_classes():
     # display current user name in corner
     display_name = current_user.name
 
-    default_user = User.query.filter_by(username="bettybrown2").first()
-    display_name = default_user
+   # default_user = User.query.filter_by(username="bettybrown2").first()
+    #display_name = default_user
 
     # make sure user is a student
-    # if not current_user or current_user.role != 'student':
+    if not current_user or current_user.role != 'student':
     # raise error if not student
-    #  print('Access denied. This page is for students only.', 'error')
-    # return redirect(url_for('login'))  # redirect to login page
+        print('Access denied. This page is for students only.', 'error')
+        return redirect(url_for('login'))  # redirect to login page
 
     # find all classes and display the info associated with them
     all_classes = Classes.query.all()
@@ -372,8 +372,8 @@ def change_classes():
         # add the class
         if action == 'add':
             # first check if student is already enrolled in the class
-            if not ClassEnrollment.query.filter_by(class_id=class_id, student_id=default_user.user_id).first():
-                new_class_enroll = ClassEnrollment(class_id=class_id, student_id=default_user.user_id, grade=0.0)
+            if not ClassEnrollment.query.filter_by(class_id=class_id, student_id=current_user.user_id).first():
+                new_class_enroll = ClassEnrollment(class_id=class_id, student_id=current_user.user_id, grade=0.0)
                 # if not ClassEnrollment.query.filter_by(class_id=class_id, student_id=current_user.user_id).first():
                 # new_class_enroll = ClassEnrollment(class_id=class_id, student_id=current_user.user_id, grade=0.0)
                 db.session.add(new_class_enroll)
@@ -384,7 +384,7 @@ def change_classes():
 
         # delete the class
         elif action == 'delete':
-            delete_class = ClassEnrollment.query.filter_by(class_id=class_id, student_id=default_user.user_id).first()
+            delete_class = ClassEnrollment.query.filter_by(class_id=class_id, student_id=current_user.user_id).first()
             # delete_class = ClassEnrollment.query.filter_by(class_id=class_id, student_id=current_user.user_id).first()
             # delete the class if the student is in it
             if delete_class:
@@ -396,7 +396,7 @@ def change_classes():
 
     # classes.html is placeholder
     # return render_template('classes.html', display_name=current_user.name, class_info_list=class_info_list)
-    return render_template('classes.html', display_name=default_user.name, class_info_list=class_info_list)
+    return render_template('classes.html', display_name=current_user.name, class_info_list=class_info_list)
 
 
 # teacher dashboard with default data
@@ -459,33 +459,47 @@ def edit_grades(class_id):
     class_to_edit = Classes.query.get_or_404(class_id)
 
     # get the students names for the students in the class
-    enrollments = ClassEnrollment.query.filter_by(class_id=class_id).join(User,
-                                                                          ClassEnrollment.student_id == User.id).add_columns(
-        User.name, ClassEnrollment.grade).all()
+    enrollments = db.session.query(User.name, ClassEnrollment.student_id, ClassEnrollment.grade) \
+        .join(User, ClassEnrollment.student_id == User.user_id) \
+        .filter(ClassEnrollment.class_id == class_id) \
+        .all()
 
-    # display the student names and their grade for the given class
+
+
     grade_list = [{
-        "Student Name": student[1],
-        "Student Id": student[0].user_id,
-        "Grade ": student[0].grade
-    } for student in enrollments]
+        "Student Name": enrollment[0],
+        "Student Id": enrollment[1],
+        "Grade": enrollment[2]
+    } for enrollment in enrollments]
+
+    # Assuming grade_list is populated as shown in previous examples
+    for index, item in enumerate(grade_list):
+        if not isinstance(item, dict):
+            print(f"Item at index {index} is not a dictionary. Type: {type(item)}")
+            continue  # Skip to the next item if this one isn't a dictionary
+
+        for key, value in item.items():
+            if not isinstance(value, (str, int, float, list, dict, bool, type(None))):
+                print(f"Non-serializable type found at index {index}, key '{key}': {type(value)}")
+            else:
+                print(f"Item at index {index}, key '{key}' is of serializable type: {type(value)}")
 
     grade_list = json.dumps(grade_list)
 
     # edit the grade
-    if request.method == 'POST':
-        student_id = request.form.get('student_id')
-        new_grade = request.form.get('new_grade')
-
-        # find the student's grade by the class_id and student_id
-        enrollment_record = ClassEnrollment.query.filter_by(class_id=class_id, student_id=student_id).first()
-
-        if enrollment_record:
-            enrollment_record.grade = new_grade
-            db.session.commit()
-            print('Grade updated successfully.', 'success')
-        else:
-            print('Enrollment record not found.', 'error')
+    # if request.method == 'POST':
+    #     student_id = request.form.get('student_id')
+    #     new_grade = request.form.get('new_grade')
+    #
+    #     # find the student's grade by the class_id and student_id
+    #     enrollment_record = ClassEnrollment.query.filter_by(class_id=class_id, student_id=student_id).first()
+    #
+    #     if enrollment_record:
+    #         enrollment_record.grade = new_grade
+    #         db.session.commit()
+    #         print('Grade updated successfully.', 'success')
+    #     else:
+    #         print('Enrollment record not found.', 'error')
 
     # assuming grades html
     return render_template('grades.html', display_name=current_user.name, grade_list=grade_list, class_id=class_id)

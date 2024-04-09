@@ -23,8 +23,8 @@
     </div>
 
     <script type="text/javascript">
-        var classinfodata = {{ class_info_list|tojson }}
-        var classIDs = {{ class_IDs|tojson }}
+        var classinfodata = {{ grade_list|tojson }}
+        var classIDs = {{ class_id|tojson }}
     </script>
     <script src="{{ url_for('static', filename='teacher.js') }}"></script>
 </body>
