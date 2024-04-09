@@ -455,7 +455,7 @@ def change_classes():
                 print("student not enrolled in class- unenrollment unavailable")
 
     # classes.html is placeholder
-    return render_template('classes.html', display_name=current_user.name, class_info_list=class_info_list)
+    return render_template('student-edit-courses.html', display_name=current_user.name, class_info_list=class_info_list)
 
 
 # teacher dashboard with default data
