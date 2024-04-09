@@ -428,9 +428,15 @@ def teacher_dashboard():
     # same format as student courses
     class_info_list = json.dumps(class_info_list)
 
+    class_IDs = [{
+        "ID": class_taught.class_id,
+    } for class_taught in classes_teaching]
+
+    class_IDs = json.dumps(class_IDs)
+
     # put correct html file name here but teacher.html is placeholder
     #return render_template('teacher.html', display_name=default_user.name, class_info_list=class_info_list)
-    return render_template('teacher.html', display_name=current_user.name, class_info_list=class_info_list)
+    return render_template('teacher.html', display_name=current_user.name, class_info_list=class_info_list, class_IDs=class_IDs)
 # return display_name, classes_list
 
 
