@@ -6,6 +6,9 @@ body{
     /* background-color: rgb(188, 238, 238); */
     background-image: linear-gradient(PaleTurquoise, white, white);
     min-height: 100%;
+    padding: 15px;
+    width: 80%;
+    margin:auto;
 }
 
 .header {
@@ -42,9 +45,36 @@ table{
 
 th{
     padding: 5px;
-    font-size: 18px;
+    font-size: 20px;
 }
 
 td{
     padding: 5px;
+    font-size: 18px;
+}
+
+a.button{
+    background-color: white;
+    padding: 7px;
+    /* border-radius: 10px;
+    border: solid black 1px; */
+    margin-top: 10px;
+    font-size: 20px;
+}
+
+a{
+    color: black;
+}
+
+.navBar{
+    margin: auto;
+    /* width: 80%; */
+    background-color: white;
+    padding: 10px;
+    border-radius: 10px;
+    
+}
+
+h2{
+    margin-top: 50px;
 }
