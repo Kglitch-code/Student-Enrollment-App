@@ -507,6 +507,20 @@ def edit_grades(class_id):
         print('Access denied. This page is for teachers only.', 'error')
         return redirect(url_for('login'))  # redirect to login page
 
+    # edit the grade
+    if request.method == 'POST':
+        student_id = request.form.get('student_id')
+        new_grade = request.form.get('new_grade')
+
+        # find the student's grade by the class_id and student_id
+        enrollment_record = ClassEnrollment.query.filter_by(class_id=class_id, student_id=student_id).first()
+
+        if enrollment_record:
+            enrollment_record.grade = new_grade
+            db.session.commit()
+            print('Grade updated successfully.', 'success')
+        else:
+            print('Enrollment record not found.', 'error')
     # get the class id from the route
     class_to_edit = Classes.query.get_or_404(class_id)
 
@@ -536,20 +550,6 @@ def edit_grades(class_id):
 
     grade_list = json.dumps(grade_list)
 
-    # edit the grade
-    if request.method == 'POST':
-        student_id = request.form.get('student_id')
-        new_grade = request.form.get('new_grade')
-
-        # find the student's grade by the class_id and student_id
-        enrollment_record = ClassEnrollment.query.filter_by(class_id=class_id, student_id=student_id).first()
-
-        if enrollment_record:
-            enrollment_record.grade = new_grade
-            db.session.commit()
-            print('Grade updated successfully.', 'success')
-        else:
-            print('Enrollment record not found.', 'error')
 
     # assuming grades html
     return render_template('grades.html', display_name=current_user.name, grade_list=grade_list, class_id=class_id)
