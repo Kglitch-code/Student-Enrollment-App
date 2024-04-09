@@ -248,19 +248,38 @@ def insert_default_data():
     if class1:
         student = User.query.filter_by(username='jimdoe').first()
         if student:
-            class_enroll_jim_doe = ClassEnrollment(class_id=class1.class_id, student_id=student.user_id, grade=80.1)
-            db.session.add(class_enroll_jim_doe)
-            db.session.commit()
-        print("successfully enrolled jimdoe into math101 for default data")
-
+            existing_enrollment = ClassEnrollment.query.filter_by(class_id=class1.class_id, student_id=student.user_id).first()
+            if not existing_enrollment:
+                try:
+                    class_enroll_jim_doe = ClassEnrollment(class_id=class1.class_id, student_id=student.user_id)
+                    db.session.add(class_enroll_jim_doe)
+                    db.session.commit()
+                    print("Successfully enrolled Jim Doe into Math 101.", "success")
+                except Exception as e:
+                    db.session.rollback()
+                    print("An error occurred while enrolling Jim Doe into Math 101.", "error")
+            else:
+                print("Jim Doe is already enrolled in Math 101.", "info")
+        else:
+            print("Student Jim Doe not found.", "error")
     # enroll betty brown into math101
     if class1:
         student = User.query.filter_by(username='bettybrown2').first()
         if student:
-            class_enroll_betty_brown = ClassEnrollment(class_id=class1.class_id, student_id=student.user_id, grade=90.5)
-            db.session.add(class_enroll_betty_brown)
-            db.session.commit()
-        print("successfully enrolled betty brown into math101 for default data")
+            existing_enrollment = ClassEnrollment.query.filter_by(class_id=class1.class_id, student_id=student.user_id).first()
+            if not existing_enrollment:
+                try:
+                    class_enroll_jim_doe = ClassEnrollment(class_id=class1.class_id, student_id=student.user_id)
+                    db.session.add(class_enroll_jim_doe)
+                    db.session.commit()
+                    print("Successfully enrolled Betty Brown into Math 101.", "success")
+                except Exception as e:
+                    db.session.rollback()
+                    print("An error occurred while enrolling Betty Brown into Math 101.", "error")
+            else:
+                print("Betty Brown is already enrolled in Math 101.", "info")
+        else:
+            print("Student Betty Brown not found.", "error")
 
     class2 = None
 
@@ -294,6 +313,27 @@ def insert_default_data():
             db.session.commit()
         print("successfully enrolled jose santos into cse108 for default data")
 
+    class3= None
+
+    ##class and class enrollment default data
+    instructor = User.query.filter_by(username='johnsmith').first()
+    if instructor:
+        # Now that you have the correct instructor, proceed to create the class with the fetched instructor_id
+        class3 = Classes(class_name='Math 32', instructor_name=instructor.name, instructor_id=instructor.user_id,
+                         times_held='MW 5-7PM', capacity_limit=2)
+        db.session.add(class3)
+        db.session.commit()
+        print("class math 32 succesfully added with johnsmith instructor")
+    else:
+        print("instructor not found")
+
+    if class3:
+        student = User.query.filter_by(username='nancylittle').first()
+        if student:
+            class_enroll_nancy = ClassEnrollment(class_id=class3.class_id, student_id=student.user_id, grade=90.5)
+            db.session.add(class_enroll_nancy)
+            db.session.commit()
+        print("successfully enrolled nancy little into math32 for default data")
 
 # create database
 with app.app_context():
@@ -424,10 +464,10 @@ def change_classes():
     if request.method == 'POST':
         # add and remove classes depending on action
         class_id = request.form.get('class_id')
-        action = request.form.get('action')  # action from front end will be add or delete
+        option = request.form.get('option')  # action from front end will be add or delete
 
         # add the class
-        if action == 'add':
+        if option == 'add':
             # Check if the class exists and capacity allows for more enrollments
             class_to_enroll = Classes.query.get(class_id)
             if class_to_enroll and len(class_to_enroll.enrollments) < class_to_enroll.capacity_limit:
@@ -443,7 +483,7 @@ def change_classes():
                 print("Class is at full capacity", 'error')
 
         # delete the class
-        elif action == 'delete':
+        elif option == 'delete':
             delete_class = ClassEnrollment.query.filter_by(class_id=class_id, student_id=current_user.user_id).first()
             # delete_class = ClassEnrollment.query.filter_by(class_id=class_id, student_id=current_user.user_id).first()
             # delete the class if the student is in it
