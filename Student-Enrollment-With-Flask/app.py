@@ -5,7 +5,6 @@ from sqlalchemy import text, true, ForeignKey, false
 from flask_login import UserMixin, LoginManager, login_required, current_user, logout_user, login_user
 from sqlalchemy.dialects.sqlite import json
 from sqlalchemy.orm import validates
-from werkzeug.sansio import response
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
 from flask_admin import Admin, expose, AdminIndexView
@@ -93,11 +92,9 @@ class BaseModelView(ModelView):
 
 # class views for each model to ignore primary key by passing the model view
 class UserModelView(BaseModelView):
-
-
     form_columns = ['user_id', 'name', 'username', 'password', 'role']
 
-        # Labels for the columns
+    # Labels for the columns
     column_labels = {
         'user_id': 'User Id',
         'name': 'Name',
@@ -120,7 +117,7 @@ class UserModelView(BaseModelView):
         if is_created:
             model.password = generate_password_hash(form.password.data)
         super(UserModelView, self).on_model_change(form, model, is_created)
-    # pass
+
 
 
 class ClassesModelView(BaseModelView):
@@ -143,6 +140,7 @@ class ClassesModelView(BaseModelView):
 
     # Fields to display in the list view
     column_list = ['class_name', 'instructor_name', 'instructor_id', 'times_held', 'capacity_limit']
+
     def __init__(self, model, session, **kwargs):
         super(ClassesModelView, self).__init__(model, session, **kwargs)
         self.static_folder = 'static'
@@ -171,7 +169,6 @@ class ClassEnrollmentModelView(BaseModelView):
         self.static_folder = 'static'
         # self.endpoint = 'admin.index'
         self.name = 'Class Enrollment'
-    # pass
 
 
 # flask views
@@ -196,9 +193,6 @@ def load_user(user_id):
 # update 2: has more default data
 # update: betty brown is enrolled into math101
 ################
-
-# need to add error handling for existing students/admins/teachers/classes/classenrollments
-
 def insert_default_data():
     new_student1 = User(name='Jim Doe', username='jimdoe', role='student')
     new_student1.set_password("password123")
@@ -319,12 +313,12 @@ def home():
 # users, classes, and classenrollments
 # VIEWABLE ONLY
 @app.route('/admin/dashboard')
-# @login_required
+@login_required
 def admin_dashboard():
     # check if user is an admin so they can view the data here
-    # if current_user.role != 'admin':
-    #   print('You do not have permission to view this page.', 'warning')
-    #   return redirect(url_for('home'))  # Redirect to login page
+    if current_user.role != 'admin':
+        print('You do not have permission to view this page.', 'warning')
+        return redirect(url_for('home'))  # Redirect to login page
 
     users_data = User.query.all()
     # Create a list of dictionaries for each user
@@ -370,17 +364,13 @@ def logout():
     return redirect(url_for('login'))
 
 
-# view the classes a student is in already
-
-# default stuff is commented out but present
+# view the classes a student is already enrolled in
 @app.route('/student/dashboard')
 @login_required
 def student_dashboard():
-    # default data- will comment out and put the other stuff back in when frontend login is done
-    # default_user = User.query.filter_by(username="jimdoe").first()
 
+    #current user logged in display their name
     display_name = current_user.name
-    # display_name = default_user.name
 
     # make sure the current user is a student
     if not current_user or current_user.role != 'student':
@@ -390,7 +380,6 @@ def student_dashboard():
 
     # find the classes that the student is enrolled in
     classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=current_user.user_id).all()
-    # classes_enrolled_in = ClassEnrollment.query.filter_by(student_id=default_user.user_id).all()
 
     class_info_list = [{
         "Class Name": enrollment.class_info.class_name,
@@ -403,7 +392,6 @@ def student_dashboard():
     class_info_list = json.dumps(class_info_list)
     # put correct html file name here but student.html is placeholder
     return render_template('student.html', display_name=current_user.name, class_info_list=class_info_list)
-    # return render_template('student.html', display_name=default_user.name, class_info_list=class_info_list)
 
 
 # student add/remove classes
@@ -412,9 +400,6 @@ def student_dashboard():
 def change_classes():
     # display current user name in corner
     display_name = current_user.name
-
-    # default_user = User.query.filter_by(username="bettybrown2").first()
-    # display_name = default_user
 
     # make sure user is a student
     if not current_user or current_user.role != 'student':
@@ -443,16 +428,19 @@ def change_classes():
 
         # add the class
         if action == 'add':
-            # first check if student is already enrolled in the class
-            if not ClassEnrollment.query.filter_by(class_id=class_id, student_id=current_user.user_id).first():
-                new_class_enroll = ClassEnrollment(class_id=class_id, student_id=current_user.user_id, grade=0.0)
-                # if not ClassEnrollment.query.filter_by(class_id=class_id, student_id=current_user.user_id).first():
-                # new_class_enroll = ClassEnrollment(class_id=class_id, student_id=current_user.user_id, grade=0.0)
-                db.session.add(new_class_enroll)
-                db.session.commit()
-                print("successfully added new class")
+            # Check if the class exists and capacity allows for more enrollments
+            class_to_enroll = Classes.query.get(class_id)
+            if class_to_enroll and len(class_to_enroll.enrollments) < class_to_enroll.capacity_limit:
+                #check if student already enrolled in class
+                if not ClassEnrollment.query.filter_by(class_id=class_id, student_id=current_user.user_id).first():
+                    new_class_enroll = ClassEnrollment(class_id=class_id, student_id=current_user.user_id, grade=0.0)
+                    db.session.add(new_class_enroll)
+                    db.session.commit()
+                    print("Successfully added new class", 'success')
+                else:
+                    print("Student already enrolled in class", 'info')
             else:
-                print("student already enrolled in class")
+                print("Class is at full capacity", 'error')
 
         # delete the class
         elif action == 'delete':
@@ -467,7 +455,6 @@ def change_classes():
                 print("student not enrolled in class- unenrollment unavailable")
 
     # classes.html is placeholder
-    # return render_template('classes.html', display_name=current_user.name, class_info_list=class_info_list)
     return render_template('classes.html', display_name=current_user.name, class_info_list=class_info_list)
 
 
@@ -476,10 +463,7 @@ def change_classes():
 @login_required
 def teacher_dashboard():
     # Access the name of the currently logged-in user so it can be displayed in top corner
-
     display_name = current_user.name
-    # default_user = User.query.filter_by(username='johnsmith').first()
-    # display_name = default_user
 
     # make sure the user viewing this page is a student
     if not current_user or current_user.role != 'teacher':
@@ -506,13 +490,8 @@ def teacher_dashboard():
 
     class_IDs = json.dumps(class_IDs)
 
-    # put correct html file name here but teacher.html is placeholder
-    # return render_template('teacher.html', display_name=default_user.name, class_info_list=class_info_list)
     return render_template('teacher.html', display_name=current_user.name, class_info_list=class_info_list,
                            class_IDs=class_IDs)
-
-
-# return display_name, classes_list
 
 
 # edit grades for the selected class
@@ -521,8 +500,6 @@ def teacher_dashboard():
 def edit_grades(class_id):
     # Access the name of the currently logged-in user so it can be displayed in top corner
     display_name = current_user.name
-    # default_user = User.query.filter_by(username='johnsmith').first()
-    # display_name = default_user.name
 
     # make sure the user viewing this page is a student
     if not current_user or current_user.role != 'teacher':
@@ -576,7 +553,6 @@ def edit_grades(class_id):
 
     # assuming grades html
     return render_template('grades.html', display_name=current_user.name, grade_list=grade_list, class_id=class_id)
-    # return render_template('grades.html', display_name=default_user.name, grade_list=grade_list, class_id=class_id)
 
 
 # function for login
@@ -606,6 +582,7 @@ def login():
     return render_template('login-teacher.html')
 
 
+#cache buster
 @app.context_processor
 def inject_cache_buster():
     def cache_buster():
@@ -614,7 +591,7 @@ def inject_cache_buster():
     return dict(cache_buster=cache_buster)
 
 
-# Remove cache to prevent errors
+# Remove cache to prevent errors - additional method
 @app.after_request
 def add_cache_control_headers(response):
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
