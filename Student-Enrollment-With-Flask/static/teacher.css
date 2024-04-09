@@ -1,0 +1,15 @@
+table{
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+td{
+    max-width: 500px;
+    word-wrap: break-word;
+    border: solid black 1px;
+}
+
+th{
+    max-width: 500px;
+    word-wrap: break-word;
+    border: solid black 1px;
+}

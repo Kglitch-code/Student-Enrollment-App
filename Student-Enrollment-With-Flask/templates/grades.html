@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>CSE 108 Lab 8</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='basic-styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='teacher.css') }}">
+</head>
+
+<body>
+    <div>
+        <div class="teacher-header">
+            <h2>Hello, {{display_name}}</h2>
+        </div>
+
+        <div class="teacher-navBar"></div>
+
+        <div id="main" class="row">
+            <div class="DataTable" id="ClassTable">Empty Table</div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var gradeList = {{ grade_list|tojson }}
+        var classID = {{ class_id|tojson }}
+    </script>
+    <script src="{{ url_for('static', filename='teacher.js') }}"></script>
+    <script>
+        showGradesData("ClassTable");
+        addOnClicks("ClassTable", "Grade", "selectGrade(", "Grade");
+    </script>
+</body>
+</html>
