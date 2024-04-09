@@ -1,6 +1,10 @@
 table{
+    margin-left: auto;
+    margin-right: auto;
     table-layout: fixed;
     border-collapse: collapse;
+    width: 100%;
+    border-spacing: 0px;
 }
 td{
     max-width: 500px;
