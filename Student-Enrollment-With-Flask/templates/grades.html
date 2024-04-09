@@ -24,11 +24,12 @@
 
     <script type="text/javascript">
         var gradeList = {{ grade_list|tojson }}
-        var classIDs = {{ class_id|tojson }}
+        var classID = {{ class_id|tojson }}
     </script>
     <script src="{{ url_for('static', filename='teacher.js') }}"></script>
     <script>
         showGradesData("ClassTable");
+        addOnClicks("ClassTable", "Grade", "selectGrade(", "Grade");
     </script>
 </body>
 </html>
