@@ -15,7 +15,11 @@
             <h2>Hello, {{display_name}}</h2>
         </div>
 
-        <div class="teacher-navBar"></div>
+        <div class="teacher-navBar">
+            <a href="/teacher/dashboard">
+                <img src ="{{ url_for('static', filename='back-arrow.png') }}" style="height: 50px;">
+            </a>
+        </div>
 
         <div id="main" class="row">
             <div class="DataTable" id="ClassTable">Empty Table</div>
