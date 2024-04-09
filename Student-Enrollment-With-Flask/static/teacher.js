@@ -44,7 +44,6 @@ function jsonToTable(elementID, json){
 //Takes the column with the header "Header" in the table with id elementID
 function addLinks(elementID, Header, IDList){
     const cIDs = JSON.parse(IDList);
-    console.log(cIDs[0].ID)
     let tableDiv = document.getElementById(elementID);
     let table = tableDiv.children[0]
     let headers = tableDiv.getElementsByTagName("th");
@@ -55,12 +54,16 @@ function addLinks(elementID, Header, IDList){
         }
     }
     if(columnNum != -1){
-        console.log(table)
         for (let i = 1; i < table.rows.length; i++) {
             let row = table.rows[i];
             if (row.cells.length > columnNum) {
-                console.log(cIDs[i])
-                row.cells[columnNum].setAttribute("href", "/teacher/dashboard/" + cIDs[i-1].ID)
+                let cell = row.cells[columnNum]
+                let text = cell.innerHTML
+                cell.innerHTML = ""
+                let ref = document.createElement("a")
+                ref.innerHTML = text
+                ref.setAttribute("href", "/teacher/dashboard/" + cIDs[i-1].ID)
+                cell.appendChild(ref);
             }
         }
     }
@@ -74,7 +77,11 @@ function showClassData(elementID){
     jsonToTable(elementID, classinfodata);
 }
 
+function showGradesData(elementID){
+    document.getElementById(elementID).innerHTML = "Grades";
+    jsonToTable(elementID, gradeList);
+}
+
 window.onload = function() {
-    showClassData("ClassTable");
-    addLinks("ClassTable", "Class Name", classIDs)
+    return
 };

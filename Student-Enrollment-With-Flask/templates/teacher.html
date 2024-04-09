@@ -27,5 +27,9 @@
         var classIDs = {{ class_IDs|tojson }}
     </script>
     <script src="{{ url_for('static', filename='teacher.js') }}"></script>
+    <script>
+        showClassData("ClassTable");
+        addLinks("ClassTable", "Class Name", classIDs)
+    </script>
 </body>
 </html>
