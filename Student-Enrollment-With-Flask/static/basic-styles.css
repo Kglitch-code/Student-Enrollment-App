@@ -1,5 +1,11 @@
+html{
+    height: 100%;
+}
+
 body{
-    background-color: rgb(188, 238, 238);
+    /* background-color: rgb(188, 238, 238); */
+    background-image: linear-gradient(PaleTurquoise, white, white);
+    min-height: 100%;
 }
 
 .header {
@@ -20,4 +26,25 @@ body{
     background-color: #f1f1f1;
     padding: 10px;
     text-align: center;
+}
+
+/* .oddRow{
+    
+} */
+
+.evenRow{
+    background-image: linear-gradient(aliceBlue, white);
+}
+
+table{
+    background-color: SkyBlue;
+}
+
+th{
+    padding: 5px;
+    font-size: 18px;
+}
+
+td{
+    padding: 5px;
 }
